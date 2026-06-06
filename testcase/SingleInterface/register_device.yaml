@@ -7,10 +7,9 @@
       Accept: application/json
   testCase:
     - case_name: register dynamic device successfully
-      json:
+      json_file: data/payloads/register_device_normal.json
+      json_override:
         deviceName: "${unique_device_name(single-device)}"
-        useBootstrapIdentity: false
-        autoConfirm: true
       extract:
         singleDeviceId: $.data.device_id
       validation:
@@ -23,15 +22,17 @@
         - jsonpath_not_empty:
             - $.data.device_id
             - $.data.register_tx
+        - jsonpath_regex:
+            $.data.device_id: ".+"
+        - jsonpath_type:
+            $.data.register_tx: dict
+            $.data.cloud_summary: dict
+            $.data.fusion_summary: dict
         - response_time_less_than: 3000
     - case_name: reject blank device name
-      json:
-        deviceName: ""
-        useBootstrapIdentity: false
-        autoConfirm: true
+      json_file: data/payloads/register_device_blank_name.json
       validation:
         - status_code: 200
         - code: 40000
         - jsonpath_exists:
             - $.message
-

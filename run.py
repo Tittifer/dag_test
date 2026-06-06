@@ -11,6 +11,7 @@ def main() -> int:
     parser.add_argument("--target", default="testcase", help="pytest target path")
     parser.add_argument("--allure", action="store_true", help="write Allure result files to report/temp")
     parser.add_argument("--mark", default=None, help="pytest marker expression, for example 'api and not concurrency'")
+    parser.add_argument("--skip-health-check", action="store_true", help="skip service health precheck")
     args, extra = parser.parse_known_args()
 
     pytest_args = [args.target]
@@ -21,10 +22,11 @@ def main() -> int:
         pytest_args.extend(["--alluredir", "report/temp", "--clean-alluredir"])
     if args.mark:
         pytest_args.extend(["-m", args.mark])
+    if args.skip_health_check:
+        pytest_args.append("--skip-health-check")
     pytest_args.extend(extra)
     return pytest.main(pytest_args)
 
 
 if __name__ == "__main__":
     sys.exit(main())
-

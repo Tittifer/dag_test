@@ -14,7 +14,11 @@
             $.data[0].terminal_id: fusion1
             $.data[1].terminal_id: fusion2
             $.data[2].terminal_id: fusion3
+        - jsonpath_length:
+            $.data: 3
+        - jsonpath_type:
+            $.data: list
+            $.data[0].summary: dict
         - jsonpath_exists:
             - $.data[0].summary
         - response_time_less_than: 2000
-

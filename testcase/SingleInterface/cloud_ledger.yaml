@@ -15,5 +15,9 @@
             - $.data.transactions
             - $.data.archive_size
             - $.data.storage
+        - jsonpath_type:
+            $.data.summary: dict
+            $.data.transactions: list
+            $.data.archive_size: int
+            $.data.storage: dict
         - response_time_less_than: 2000
-

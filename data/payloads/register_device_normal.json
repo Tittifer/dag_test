@@ -1,0 +1,5 @@
+{
+  "deviceName": "${unique_device_name(auto-device)}",
+  "useBootstrapIdentity": false,
+  "autoConfirm": true
+}

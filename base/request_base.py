@@ -5,6 +5,7 @@ from typing import Any, Dict
 from common.allure_helper import attach_text, dynamic_title
 from common.assertions import Assertions
 from common.config import Config
+from common.data_loader import deep_merge, read_json_file
 from common.http_client import HttpClient
 from common.jsonpath_utils import select_json_path
 from common.template import replace_template
@@ -31,22 +32,23 @@ class RequestBase:
         method = base_info.get("method", "GET")
         headers = base_info.get("header") or {}
         cookies = base_info.get("cookies")
+        request_payload = self._prepare_request_payload(test_case)
 
         attach_text("api name", api_name)
         attach_text("case name", case_name)
         attach_text("request url", url)
         attach_text("request method", method)
         attach_text("request headers", headers)
-        attach_text("request body", {key: test_case.get(key) for key in ("params", "json", "data") if key in test_case})
+        attach_text("request body", request_payload)
 
         response = self.client.request(
             name=api_name or case_name,
             method=method,
             url=url,
             headers=headers,
-            params=test_case.get("params"),
-            json_body=test_case.get("json"),
-            data=test_case.get("data"),
+            params=request_payload.get("params"),
+            json_body=request_payload.get("json"),
+            data=request_payload.get("data"),
             cookies=cookies,
         )
         elapsed_ms = response.elapsed.total_seconds() * 1000
@@ -67,6 +69,18 @@ class RequestBase:
         )
         return response_body
 
+    def _prepare_request_payload(self, test_case: Dict[str, Any]) -> Dict[str, Any]:
+        payload = {key: test_case.get(key) for key in ("params", "json", "data") if key in test_case}
+        if "json_file" not in test_case:
+            return payload
+
+        json_body = replace_template(read_json_file(test_case["json_file"]))
+        json_override = test_case.get("json_override")
+        if json_override:
+            json_body = deep_merge(json_body, json_override)
+        payload["json"] = json_body
+        return payload
+
     def _extract_values(self, extract_rules: Dict[str, str] | None, response_body: Any) -> None:
         if not extract_rules:
             return
@@ -75,4 +89,3 @@ class RequestBase:
             values[key] = select_json_path(response_body, path)
         self.extract.set_many(values)
         attach_text("extracted values", json.dumps(values, ensure_ascii=False))
-

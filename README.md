@@ -75,6 +75,22 @@ python run.py --mark "concurrency"
 python run.py --allure
 ```
 
+跳过服务健康检查：
+
+```powershell
+python run.py --skip-health-check
+```
+
+健康检查配置在 `conf/config.ini`：
+
+```ini
+[health_check]
+enabled = true
+path = /api/health
+expected_code = 0
+timeout = 3
+```
+
 ## YAML 用例格式
 
 ```yaml
@@ -102,3 +118,52 @@ python run.py --allure
 
 支持 `${get_extract_data(key)}`、`${timestamp()}`、`${uuid()}`、`${random_int(1,100)}`、`${unique_device_name(prefix)}` 等动态参数。
 
+## 外置请求数据
+
+复杂请求体可以放到 `data/payloads`，YAML 中通过 `json_file` 引用，并用 `json_override` 覆盖本条用例的差异字段：
+
+```yaml
+- case_name: submit telemetry
+  json_file: data/payloads/telemetry_normal.json
+  json_override:
+    dataPayload:
+      device_name: "${get_extract_data(flowDeviceName)}"
+      sequence: 2
+```
+
+处理顺序是：
+
+```text
+读取 json_file -> 替换动态参数 -> 合并 json_override -> 发送请求
+```
+
+## 断言能力
+
+常用断言：
+
+```yaml
+validation:
+  - status_code: 200
+  - code: 0
+  - message: ok
+  - jsonpath_eq:
+      $.data.terminal_id: fusion1
+  - jsonpath_exists:
+      - $.data.summary
+  - jsonpath_not_empty:
+      - $.data.device_id
+  - jsonpath_type:
+      $.data.transactions: list
+      $.data.summary: dict
+  - jsonpath_length:
+      $.data: 3
+  - jsonpath_min_length:
+      $.data.transactions: 1
+  - jsonpath_greater_or_equal:
+      $.data.simulated_device_count: 0
+  - jsonpath_contains:
+      $.data.transactions: "${get_extract_data(flowBusinessTxId)}"
+  - jsonpath_regex:
+      $.data.device_id: ".+"
+  - response_time_less_than: 2000
+```

@@ -10,6 +10,9 @@
         - status_code: 200
         - code: 0
         - message: ok
+        - jsonpath_type:
+            $.data.fusions: list
+            $.data.simulated_device_count: int
 
 - baseInfo:
     api_name: business flow register device
@@ -20,10 +23,9 @@
       Accept: application/json
   testCase:
     - case_name: register device and extract device id
-      json:
+      json_file: data/payloads/register_device_normal.json
+      json_override:
         deviceName: "${unique_device_name(flow-device)}"
-        useBootstrapIdentity: false
-        autoConfirm: true
       extract:
         flowDeviceId: $.data.device_id
         flowDeviceName: $.data.device_name
@@ -38,6 +40,10 @@
         - jsonpath_not_empty:
             - $.data.device_id
             - $.data.register_tx.tx_id
+        - jsonpath_type:
+            $.data.register_tx: dict
+            $.data.cloud_summary: dict
+            $.data.fusion_summary: dict
 
 - baseInfo:
     api_name: business flow submit telemetry
@@ -48,16 +54,11 @@
       Accept: application/json
   testCase:
     - case_name: submit telemetry with extracted device id
-      json:
+      json_file: data/payloads/telemetry_normal.json
+      json_override:
         dataPayload:
           sequence: 1
           device_name: "${get_extract_data(flowDeviceName)}"
-          captured_at: "${timestamp()}"
-          metrics:
-            voltage_v: 228.4
-            current_a: 16.2
-            temperature_c: 33.8
-            active_power_kw: 3.701
       extract:
         flowBusinessTxId: $.data.business_tx.tx_id
       validation:
@@ -70,6 +71,10 @@
             $.data.terminal_id: fusion1
         - jsonpath_not_empty:
             - $.data.business_tx.tx_id
+        - jsonpath_type:
+            $.data.business_tx: dict
+            $.data.cloud_summary: dict
+            $.data.fusion_summary: dict
 
 - baseInfo:
     api_name: business flow query fusion ledger
@@ -83,12 +88,15 @@
         - status_code: 200
         - code: 0
         - message: ok
-        - contains: "${get_extract_data(flowBusinessTxId)}"
         - jsonpath_eq:
             $.data.terminal_id: fusion1
         - jsonpath_exists:
             - $.data.summary
             - $.data.transactions
+        - jsonpath_min_length:
+            $.data.transactions: 1
+        - jsonpath_contains:
+            $.data.transactions: "${get_extract_data(flowBusinessTxId)}"
 
 - baseInfo:
     api_name: business flow query device list
@@ -104,4 +112,3 @@
         - message: ok
         - contains: "${get_extract_data(flowDeviceId)}"
         - contains: "${get_extract_data(flowDeviceName)}"
-

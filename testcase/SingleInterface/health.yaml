@@ -18,5 +18,11 @@
             - $.data.cloud
             - $.data.fusions
             - $.data.simulated_device_count
+        - jsonpath_type:
+            $.data.storage: dict
+            $.data.cloud: dict
+            $.data.fusions: list
+            $.data.simulated_device_count: int
+        - jsonpath_greater_or_equal:
+            $.data.simulated_device_count: 0
         - response_time_less_than: 2000
-

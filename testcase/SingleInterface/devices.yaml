@@ -12,5 +12,6 @@
         - message: ok
         - jsonpath_exists:
             - $.data
+        - jsonpath_type:
+            $.data: list
         - response_time_less_than: 2000
-
