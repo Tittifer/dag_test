@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: dag-api-test-framework
+Version: 0.1.0
+Summary: Pytest API automation framework for dag-docker-sim-java
+Requires-Python: >=3.10
+Requires-Dist: pytest>=8.0
+Requires-Dist: requests>=2.31
+Requires-Dist: PyYAML>=6.0
+Requires-Dist: allure-pytest>=2.13
+Requires-Dist: pymysql>=1.1
+Requires-Dist: redis>=5.0

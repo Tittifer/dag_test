@@ -1,0 +1,16 @@
+- baseInfo:
+    api_name: device list query
+    url: /api/devices
+    method: GET
+    header:
+      Accept: application/json
+  testCase:
+    - case_name: devices returns list body
+      validation:
+        - status_code: 200
+        - code: 0
+        - message: ok
+        - jsonpath_exists:
+            - $.data
+        - response_time_less_than: 2000
+

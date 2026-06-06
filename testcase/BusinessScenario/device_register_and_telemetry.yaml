@@ -1,0 +1,107 @@
+- baseInfo:
+    api_name: business flow health precheck
+    url: /api/health
+    method: GET
+    header:
+      Accept: application/json
+  testCase:
+    - case_name: precheck service is alive
+      validation:
+        - status_code: 200
+        - code: 0
+        - message: ok
+
+- baseInfo:
+    api_name: business flow register device
+    url: /api/fusions/fusion1/devices/register
+    method: POST
+    header:
+      Content-Type: application/json
+      Accept: application/json
+  testCase:
+    - case_name: register device and extract device id
+      json:
+        deviceName: "${unique_device_name(flow-device)}"
+        useBootstrapIdentity: false
+        autoConfirm: true
+      extract:
+        flowDeviceId: $.data.device_id
+        flowDeviceName: $.data.device_name
+        flowRegisterTxId: $.data.register_tx.tx_id
+      validation:
+        - status_code: 200
+        - code: 0
+        - message: ok
+        - jsonpath_eq:
+            $.data.accepted: true
+            $.data.terminal_id: fusion1
+        - jsonpath_not_empty:
+            - $.data.device_id
+            - $.data.register_tx.tx_id
+
+- baseInfo:
+    api_name: business flow submit telemetry
+    url: /api/fusions/fusion1/devices/${get_extract_data(flowDeviceId)}/telemetry
+    method: POST
+    header:
+      Content-Type: application/json
+      Accept: application/json
+  testCase:
+    - case_name: submit telemetry with extracted device id
+      json:
+        dataPayload:
+          sequence: 1
+          device_name: "${get_extract_data(flowDeviceName)}"
+          captured_at: "${timestamp()}"
+          metrics:
+            voltage_v: 228.4
+            current_a: 16.2
+            temperature_c: 33.8
+            active_power_kw: 3.701
+      extract:
+        flowBusinessTxId: $.data.business_tx.tx_id
+      validation:
+        - status_code: 200
+        - code: 0
+        - message: ok
+        - jsonpath_eq:
+            $.data.accepted: true
+            $.data.device_id: "${get_extract_data(flowDeviceId)}"
+            $.data.terminal_id: fusion1
+        - jsonpath_not_empty:
+            - $.data.business_tx.tx_id
+
+- baseInfo:
+    api_name: business flow query fusion ledger
+    url: /api/fusions/fusion1/ledger
+    method: GET
+    header:
+      Accept: application/json
+  testCase:
+    - case_name: fusion ledger contains submitted business tx
+      validation:
+        - status_code: 200
+        - code: 0
+        - message: ok
+        - contains: "${get_extract_data(flowBusinessTxId)}"
+        - jsonpath_eq:
+            $.data.terminal_id: fusion1
+        - jsonpath_exists:
+            - $.data.summary
+            - $.data.transactions
+
+- baseInfo:
+    api_name: business flow query device list
+    url: /api/devices
+    method: GET
+    header:
+      Accept: application/json
+  testCase:
+    - case_name: device list contains registered device
+      validation:
+        - status_code: 200
+        - code: 0
+        - message: ok
+        - contains: "${get_extract_data(flowDeviceId)}"
+        - contains: "${get_extract_data(flowDeviceName)}"
+

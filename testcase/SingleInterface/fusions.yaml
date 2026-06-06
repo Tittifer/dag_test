@@ -1,0 +1,20 @@
+- baseInfo:
+    api_name: fusion list query
+    url: /api/fusions
+    method: GET
+    header:
+      Accept: application/json
+  testCase:
+    - case_name: fusions returns default terminals
+      validation:
+        - status_code: 200
+        - code: 0
+        - message: ok
+        - jsonpath_eq:
+            $.data[0].terminal_id: fusion1
+            $.data[1].terminal_id: fusion2
+            $.data[2].terminal_id: fusion3
+        - jsonpath_exists:
+            - $.data[0].summary
+        - response_time_less_than: 2000
+

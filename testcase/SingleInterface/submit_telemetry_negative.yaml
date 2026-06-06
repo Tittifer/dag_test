@@ -1,0 +1,25 @@
+- baseInfo:
+    api_name: submit telemetry negative
+    url: /api/fusions/fusion1/devices/not-exist-device/telemetry
+    method: POST
+    header:
+      Content-Type: application/json
+      Accept: application/json
+  testCase:
+    - case_name: reject telemetry for missing device
+      json:
+        dataPayload:
+          sequence: 1
+          device_name: not-exist-device
+          captured_at: 1773821000.0
+          metrics:
+            voltage_v: 228.4
+            current_a: 16.2
+            temperature_c: 33.8
+            active_power_kw: 3.701
+      validation:
+        - status_code: 200
+        - code: 40400
+        - jsonpath_eq:
+            $.message: device_not_found
+

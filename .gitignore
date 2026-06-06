@@ -1,0 +1,7 @@
+__pycache__/
+.pytest_cache/
+.venv/
+logs/
+report/temp/
+report/allure-report/
+*.pyc

@@ -1,0 +1,20 @@
+- baseInfo:
+    api_name: fusion ledger query
+    url: /api/fusions/fusion1/ledger
+    method: GET
+    header:
+      Accept: application/json
+  testCase:
+    - case_name: fusion1 ledger returns summary
+      validation:
+        - status_code: 200
+        - code: 0
+        - message: ok
+        - jsonpath_eq:
+            $.data.terminal_id: fusion1
+        - jsonpath_exists:
+            - $.data.summary
+            - $.data.transactions
+            - $.data.storage
+        - response_time_less_than: 2000
+

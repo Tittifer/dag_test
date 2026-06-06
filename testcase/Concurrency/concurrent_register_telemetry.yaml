@@ -1,0 +1,8 @@
+- case_name: small concurrent register and telemetry scenario
+  terminal_id: fusion1
+  device_count: 10
+  concurrency: 5
+  telemetry_per_device: 2
+  max_error_rate: 0
+  max_p95_ms: 5000
+

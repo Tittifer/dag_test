@@ -1,0 +1,37 @@
+- baseInfo:
+    api_name: register device
+    url: /api/fusions/fusion1/devices/register
+    method: POST
+    header:
+      Content-Type: application/json
+      Accept: application/json
+  testCase:
+    - case_name: register dynamic device successfully
+      json:
+        deviceName: "${unique_device_name(single-device)}"
+        useBootstrapIdentity: false
+        autoConfirm: true
+      extract:
+        singleDeviceId: $.data.device_id
+      validation:
+        - status_code: 200
+        - code: 0
+        - message: ok
+        - jsonpath_eq:
+            $.data.accepted: true
+            $.data.terminal_id: fusion1
+        - jsonpath_not_empty:
+            - $.data.device_id
+            - $.data.register_tx
+        - response_time_less_than: 3000
+    - case_name: reject blank device name
+      json:
+        deviceName: ""
+        useBootstrapIdentity: false
+        autoConfirm: true
+      validation:
+        - status_code: 200
+        - code: 40000
+        - jsonpath_exists:
+            - $.message
+

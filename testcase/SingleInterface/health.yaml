@@ -1,0 +1,22 @@
+- baseInfo:
+    api_name: health check
+    url: /api/health
+    method: GET
+    header:
+      Accept: application/json
+  testCase:
+    - case_name: health returns service status
+      validation:
+        - status_code: 200
+        - code: 0
+        - message: ok
+        - jsonpath_eq:
+            $.data.service: dag-docker-sim-java
+            $.data.mode: spring-boot-rest
+        - jsonpath_exists:
+            - $.data.storage
+            - $.data.cloud
+            - $.data.fusions
+            - $.data.simulated_device_count
+        - response_time_less_than: 2000
+
